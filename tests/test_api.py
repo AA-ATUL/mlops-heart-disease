@@ -38,12 +38,22 @@ def test_prediction_endpoint():
     assert response.status_code == 200
 
     result = response.json()
+
     assert result["prediction"] in [0, 1]
     assert result["prediction_label"] in [
         "disease_present",
         "no_disease_detected",
     ]
     assert 0 <= result["confidence"] <= 1
+    assert 0 <= result["disease_probability"] <= 1
+
+    expected_confidence = (
+        result["disease_probability"]
+        if result["prediction"] == 1
+        else 1 - result["disease_probability"]
+    )
+
+    assert abs(result["confidence"] - expected_confidence) < 1e-8
     assert result["model"] == "logistic_regression"
 
 
